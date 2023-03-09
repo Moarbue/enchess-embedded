@@ -31,27 +31,21 @@ class EnchessCallbacks : public BLECharacteristicCallbacks {
 
 
       if (rxValue.length() > 0) {
-        Serial.println("*********");
-        Serial.print("Received Value: ");
-
         for (int i = 0; i < rxValue.length(); i++) {
-          Serial.print(rxValue[i]);
+          LOG_MSG(rxValue[i]);
         }
 
-        Serial.println();
+        LOG_MSG("\r\n");
 
         // Do stuff based on the command received from the app
         if (rxValue.find("A") != -1) { 
-          Serial.print("Turning ON!");
+          LOG_MSG("Turning ON!");
           digitalWrite(ENCHESS_PIN_LED1, HIGH);
         }
         else if (rxValue.find("B") != -1) {
-          Serial.print("Turning OFF!");
+          LOG_MSG("Turning OFF!");
           digitalWrite(ENCHESS_PIN_LED1, LOW);
         }
-
-        Serial.println();
-        Serial.println("*********");
       }
     }
 };
@@ -63,8 +57,6 @@ void setup() {
   pinMode(ENCHESS_PIN_LED2, OUTPUT);
   pinMode(ENCHESS_PIN_LED3, OUTPUT);
 
-  Serial.begin(115200);
-  while(!Serial);
   LOG_MSG("Welcome to Enchess %d.%d!", ENCHESS_VERSION_MAJOR, ENCHESS_VERSION_MINOR);
   
   LOG_MSG("INFO: Setting up BLE...");
