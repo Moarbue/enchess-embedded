@@ -32,7 +32,7 @@ class EnchessCallbacks : public BLECharacteristicCallbacks {
 
       if (rxValue.length() > 0) {
         for (int i = 0; i < rxValue.length(); i++) {
-          LOG_MSG(rxValue[i]);
+          LOG_MSG("%c", rxValue[i]);
         }
 
         LOG_MSG("\r\n");
