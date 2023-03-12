@@ -8,4 +8,11 @@
 #define ENCHESS_CHARACTERISTIC_UUID_RX "6E400002-B5A3-F393-E0A9-E50E24DCCA9E"
 #define ENCHESS_CHARACTERISTIC_UUID_TX "6E400003-B5A3-F393-E0A9-E50E24DCCA9E"
 
+#define ENCHESS_BOARD_SIZE        240 // board size in mm
+#define ENCHESS_THREADED_ROD_LEAD 8.0 // lead of threaded rod in mm
+
+#define ENCHESS_STEP_DELAY           300 // delay between steps in µs
+#define ENCHESS_STEPS_PER_REVOLUTION 200 // motor steps for one full turn (1.8° per step)
+#define ENCHESS_MICROSTEPS           8   // divider for each step
+
 #endif // ENCHESS_CONFIG_H
