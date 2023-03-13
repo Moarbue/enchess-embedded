@@ -29,6 +29,9 @@ void execute_move(Columns c, Rows r)
     int8_t dx = current_col - c;
     int8_t dy = current_row - r;
 
+    current_col = c;
+    current_row = r;
+
     tmc2209_rotate(s_col, dx * ENCHESS_DEGREES_PER_SQAURE);
     tmc2209_rotate(s_row, dy * ENCHESS_DEGREES_PER_SQAURE);
 }
