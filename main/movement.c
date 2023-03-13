@@ -1,5 +1,6 @@
 #include "movement.h"
 #include "enchess_pinout.h"
+#include "TMC2209.h"
 
 tmc2209_t *s_col = NULL, *s_row = NULL;
 

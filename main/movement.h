@@ -1,4 +1,3 @@
-#include "TMC2209.h"
 #include "config.h"
 
 #ifndef ENCHESS_MOVEMENT_H
