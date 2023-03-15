@@ -33,6 +33,7 @@ typedef enum {
     ROW_8,
 } Rows;
 
+void home_motors(void);
 void execute_move(Columns c, Rows r);
 void steppers_update(void);
 

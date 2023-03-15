@@ -10,15 +10,20 @@ Rows    current_row = ROW_1;
 
 static void init_steppers(void)
 {
-    tmc2209_new(s_col, ENCHESS_PIN_S1_DIR, ENCHESS_PIN_S1_STEP, ENCHESS_PIN_S1_EN);
+    tmc2209_new(s_col, ENCHESS_PIN_S1_DIR, ENCHESS_PIN_S1_STEP, ENCHESS_PIN_S1_EN, ENCHESS_PIN_S1_MS1, ENCHESS_PIN_S1_MS2);
     tmc2209_set_step_delay(s_col, ENCHESS_STEP_DELAY);
     tmc2209_set_steps_per_revolution(s_col, ENCHESS_STEPS_PER_REVOLUTION);
     tmc2209_set_microsteps(s_col, ENCHESS_MICROSTEPS);
 
-    tmc2209_new(s_row, ENCHESS_PIN_S2_DIR, ENCHESS_PIN_S2_STEP, ENCHESS_PIN_S2_EN);
+    tmc2209_new(s_row, ENCHESS_PIN_S2_DIR, ENCHESS_PIN_S2_STEP, ENCHESS_PIN_S2_EN, ENCHESS_PIN_S2_MS1, ENCHESS_PIN_S2_MS2);
     tmc2209_set_step_delay(s_row, ENCHESS_STEP_DELAY);
     tmc2209_set_steps_per_revolution(s_row, ENCHESS_STEPS_PER_REVOLUTION);
     tmc2209_set_microsteps(s_row, ENCHESS_MICROSTEPS);
+}
+
+void home_motors(void)
+{
+
 }
 
 void execute_move(Columns c, Rows r)
