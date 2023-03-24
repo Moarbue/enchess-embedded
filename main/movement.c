@@ -1,6 +1,11 @@
 #include "movement.h"
 #include "enchess_pinout.h"
-#include "TMC2209.h"
+
+#define TMC2209_DEFAULT_STEPS_PER_REVOLUTION ENCHESS_STEPS_PER_REVOLUTION
+#include "tmc2209/tmc2209.h"
+
+#define ENCHESS_SQAURE_SIZE       (ENCHESS_BOARD_SIZE / 8) // size of one square in mm
+#define ENCHESS_DEGREES_PER_SQAURE  (360.0 * (ENCHESS_SQAURE_SIZE / ENCHESS_THREADED_ROD_LEAD))
 
 tmc2209_t *s_col = NULL, *s_row = NULL;
 
@@ -10,20 +15,23 @@ Rows    current_row = ROW_1;
 
 static void init_steppers(void)
 {
-    tmc2209_new(s_col, ENCHESS_PIN_S1_DIR, ENCHESS_PIN_S1_STEP, ENCHESS_PIN_S1_EN, ENCHESS_PIN_S1_MS1, ENCHESS_PIN_S1_MS2);
+    tmc2209_full(s_col, ENCHESS_PIN_S1_EN, ENCHESS_PIN_S1_DIR, ENCHESS_PIN_S1_STEP, ENCHESS_PIN_S_RX,
+                        ENCHESS_PIN_S_TX,  ENCHESS_PIN_S1_MS1, ENCHESS_PIN_S1_MS2,  TMC2209_ADDRESS_0);
     tmc2209_set_step_delay(s_col, ENCHESS_STEP_DELAY);
-    tmc2209_set_steps_per_revolution(s_col, ENCHESS_STEPS_PER_REVOLUTION);
-    tmc2209_set_microsteps(s_col, ENCHESS_MICROSTEPS);
+    tmc2209_set_microsteps(s_col, (tmc2209_microstep)ENCHESS_MICROSTEPS);
 
-    tmc2209_new(s_row, ENCHESS_PIN_S2_DIR, ENCHESS_PIN_S2_STEP, ENCHESS_PIN_S2_EN, ENCHESS_PIN_S2_MS1, ENCHESS_PIN_S2_MS2);
+    tmc2209_full(s_row, ENCHESS_PIN_S2_EN, ENCHESS_PIN_S1_DIR, ENCHESS_PIN_S1_STEP, ENCHESS_PIN_S_RX,
+                        ENCHESS_PIN_S_TX,  ENCHESS_PIN_S2_MS1, ENCHESS_PIN_S1_MS2,  TMC2209_ADDRESS_1);
     tmc2209_set_step_delay(s_row, ENCHESS_STEP_DELAY);
-    tmc2209_set_steps_per_revolution(s_row, ENCHESS_STEPS_PER_REVOLUTION);
-    tmc2209_set_microsteps(s_row, ENCHESS_MICROSTEPS);
+    tmc2209_set_microsteps(s_row, (tmc2209_microstep)ENCHESS_MICROSTEPS);
 }
 
 void home_motors(void)
 {
-
+    while (!tmc2209_is_stalling(s_col)) {
+        tmc2209_rotate(s, 1);
+        tmc2209_update(s);
+    }
 }
 
 void execute_move(Columns c, Rows r)

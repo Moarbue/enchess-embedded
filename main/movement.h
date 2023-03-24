@@ -8,9 +8,6 @@ extern "C"{
 #endif
 
 
-#define ENCHESS_SQAURE_SIZE       (ENCHESS_BOARD_SIZE / 8) // size of one square in mm
-#define ENCHESS_DEGREES_PER_SQAURE  (360.0 * (ENCHESS_SQAURE_SIZE / ENCHESS_THREADED_ROD_LEAD))
-
 typedef enum {
     COLUMN_A = 0,
     COLUMN_B,
