@@ -12,6 +12,9 @@
 #define ENCHESS_THREADED_ROD_LEAD 8.0 // lead of threaded rod in mm
 
 #define ENCHESS_STEP_DELAY           300 // delay between steps in µs
+#define ENCHESS_HOME_STEP_DELAY_1    300 // delay between steps in µs during first homing
+#define ENCHESS_HOME_STEP_DELAY_2    800 // delay between steps in µs during second homing
+#define ENCHESS_HOME_RETRACTION      5   // retraction distance in mm after stall is detected
 #define ENCHESS_STEPS_PER_REVOLUTION 200 // motor steps for one full turn (1.8° per step)
 #define ENCHESS_MICROSTEPS           8   // divider for each step
 

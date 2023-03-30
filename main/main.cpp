@@ -62,6 +62,7 @@ void setup() {
   LOG_MSG("INFO: Setting up BLE...");
   setupBLE();
   LOG_MSG("INFO: BLE is set up. Waiting for a client connection...");
+  home_motors();
 }
 
 void loop() {
