@@ -9,6 +9,7 @@ using std::string;
 #include "enchess_pinout.h"
 #include "util.h"
 #include "config.h"
+#include "movement.h"
 
 bool deviceConnected = false;
 

@@ -2,7 +2,7 @@
 #include "enchess_pinout.h"
 
 #define TMC2209_DEFAULT_STEPS_PER_REVOLUTION ENCHESS_STEPS_PER_REVOLUTION
-#include "tmc2209/tmc2209.h"
+#include "tmc2209.h"
 
 #define ENCHESS_SQUARE_SIZE         (ENCHESS_BOARD_SIZE / 8) // size of one square in mm
 #define ENCHESS_DEGREES_PER_SQUARE  (360.0 * (ENCHESS_SQUARE_SIZE / ENCHESS_THREADED_ROD_LEAD))
