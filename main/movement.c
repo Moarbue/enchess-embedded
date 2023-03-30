@@ -16,10 +16,12 @@ Rows    current_row = ROW_1;
 
 static void init_steppers(void)
 {
+    s_col = (tmc2209_t*) malloc(sizeof (tmc2209_t));
     tmc2209_full(s_col, ENCHESS_PIN_S1_EN, ENCHESS_PIN_S1_DIR, ENCHESS_PIN_S1_STEP, ENCHESS_PIN_S_RX,
                         ENCHESS_PIN_S_TX,  ENCHESS_PIN_S1_MS1, ENCHESS_PIN_S1_MS2,  TMC2209_ADDRESS_0);
     tmc2209_set_microsteps(s_col, (tmc2209_microstep)ENCHESS_MICROSTEPS);
 
+    s_row = (tmc2209_t*) malloc(sizeof (tmc2209_t));
     tmc2209_full(s_row, ENCHESS_PIN_S2_EN, ENCHESS_PIN_S1_DIR, ENCHESS_PIN_S1_STEP, ENCHESS_PIN_S_RX,
                         ENCHESS_PIN_S_TX,  ENCHESS_PIN_S2_MS1, ENCHESS_PIN_S1_MS2,  TMC2209_ADDRESS_1);
     tmc2209_set_microsteps(s_row, (tmc2209_microstep)ENCHESS_MICROSTEPS);
