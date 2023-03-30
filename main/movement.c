@@ -6,11 +6,10 @@
 
 #define ENCHESS_SQUARE_SIZE         (ENCHESS_BOARD_SIZE / 8) // size of one square in mm
 #define ENCHESS_DEGREES_PER_SQUARE  (360.0 * (ENCHESS_SQUARE_SIZE / ENCHESS_THREADED_ROD_LEAD))
-#define ENCHESS_DEGREES_PER_MM      (360.0 * (1.0 / ENCHESS_THREADED_ROD_LEAD))
+#define ENCHESS_DEGREES_PER_MM      (360.0 / ENCHESS_THREADED_ROD_LEAD)
 
 tmc2209_t *s_col = NULL, *s_row = NULL;
 
-// TODO: implement sensorless homing
 Columns current_col = COLUMN_A;
 Rows    current_row = ROW_1;
 
@@ -58,7 +57,7 @@ static void home_routine(uint32_t step_delay, uint32_t retraction)
     retracted_degrees = retraction * ENCHESS_DEGREES_PER_MM;
     tmc2209_rotate(s_col, -retracted_degrees);
     tmc2209_rotate(s_row, -retracted_degrees);
-    while(!tmc2209_step_is_idle(s_col) && !tmc2209_step_is_idle(s_row)) {
+    while (!tmc2209_step_is_idle(s_col) && !tmc2209_step_is_idle(s_row)) {
         tmc2209_update(s_col); 
         tmc2209_update(s_row); 
         // don't block RTOS
@@ -75,6 +74,9 @@ void home_motors(void)
 
     home_routine(ENCHESS_HOME_STEP_DELAY_1, ENCHESS_HOME_RETRACTION);
     home_routine(ENCHESS_HOME_STEP_DELAY_2, ENCHESS_HOME_RETRACTION);
+    // find first square (A1)
+    tmc2209_rotate(s_col, ((ENCHESS_SQUARE_SIZE / 2) - ENCHESS_HOME_RETRACTION) * ENCHESS_DEGREES_PER_MM)
+    tmc2209_rotate(s_row, ((ENCHESS_SQUARE_SIZE / 2) - ENCHESS_HOME_RETRACTION) * ENCHESS_DEGREES_PER_MM)
 }
 
 void execute_move(Columns c, Rows r)
