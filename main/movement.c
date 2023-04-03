@@ -1,5 +1,6 @@
 #include "movement.h"
 #include "enchess_pinout.h"
+#include "util.h"
 
 #define TMC2209_DEFAULT_STEPS_PER_REVOLUTION ENCHESS_STEPS_PER_REVOLUTION
 #include "tmc2209.h"
@@ -18,12 +19,20 @@ static void init_steppers(void)
     s_col = (tmc2209_t*) malloc(sizeof (tmc2209_t));
     tmc2209_full(s_col, ENCHESS_PIN_S1_EN, ENCHESS_PIN_S1_DIR, ENCHESS_PIN_S1_STEP, ENCHESS_PIN_S_RX,
                         ENCHESS_PIN_S_TX,  ENCHESS_PIN_S1_MS1, ENCHESS_PIN_S1_MS2,  TMC2209_ADDRESS_0);
-    tmc2209_set_microsteps(s_col, (tmc2209_microstep)ENCHESS_MICROSTEPS);
-
     s_row = (tmc2209_t*) malloc(sizeof (tmc2209_t));
     tmc2209_full(s_row, ENCHESS_PIN_S2_EN, ENCHESS_PIN_S1_DIR, ENCHESS_PIN_S1_STEP, ENCHESS_PIN_S_RX,
                         ENCHESS_PIN_S_TX,  ENCHESS_PIN_S2_MS1, ENCHESS_PIN_S1_MS2,  TMC2209_ADDRESS_1);
+    
+    while(!tmc2209_check_connection(s_col) && !tmc2209_check_connection(s_row)) {
+        delay(1000);
+        LOG_MSG("Failed to setup UART communication with stepper drivers!");
+    }
+
+    tmc2209_set_microsteps(s_col, (tmc2209_microstep)ENCHESS_MICROSTEPS);
+    tmc2209_stallguard_thrs(s_col, ENCHESS_STALLGUARD_THRS);
+
     tmc2209_set_microsteps(s_row, (tmc2209_microstep)ENCHESS_MICROSTEPS);
+    tmc2209_stallguard_thrs(s_row, ENCHESS_STALLGUARD_THRS);
 }
 
 static void home_routine(uint32_t step_delay, uint32_t retraction)
@@ -72,11 +81,15 @@ void home_motors(void)
         init_steppers();
     }
 
-    home_routine(ENCHESS_HOME_STEP_DELAY_1, ENCHESS_HOME_RETRACTION);
-    home_routine(ENCHESS_HOME_STEP_DELAY_2, ENCHESS_HOME_RETRACTION);
+    LOG_MSG("Homing...");
+
+    home_routine(ENCHESS_STEP_DELAY,      ENCHESS_HOME_RETRACTION);
+    home_routine(ENCHESS_HOME_STEP_DELAY, ENCHESS_HOME_RETRACTION);
     // find first square (A1)
-    tmc2209_rotate(s_col, ((ENCHESS_SQUARE_SIZE / 2) - ENCHESS_HOME_RETRACTION) * ENCHESS_DEGREES_PER_MM)
-    tmc2209_rotate(s_row, ((ENCHESS_SQUARE_SIZE / 2) - ENCHESS_HOME_RETRACTION) * ENCHESS_DEGREES_PER_MM)
+    tmc2209_set_step_delay(s_col, ENCHESS_STEP_DELAY);
+    tmc2209_set_step_delay(s_row, ENCHESS_STEP_DELAY);
+    tmc2209_rotate(s_col, ((ENCHESS_SQUARE_SIZE / 2) - ENCHESS_HOME_RETRACTION + ENCHESS_BOARD_OFFSET_X) * ENCHESS_DEGREES_PER_MM);
+    tmc2209_rotate(s_row, ((ENCHESS_SQUARE_SIZE / 2) - ENCHESS_HOME_RETRACTION + ENCHESS_BOARD_OFFSET_Y) * ENCHESS_DEGREES_PER_MM);
 }
 
 void execute_move(Columns c, Rows r)
@@ -84,6 +97,9 @@ void execute_move(Columns c, Rows r)
     if (s_col == NULL || s_row == NULL) {
         init_steppers();
     }
+
+    LOG_MSG("Executing Move: %c%c --> %c%c", (char)('A' + current_col), (char)('0' + current_row),
+                                             (char)('A' + c),           (char)('0' + r));
 
     int8_t dx = current_col - c;
     int8_t dy = current_row - r;
