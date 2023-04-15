@@ -63,6 +63,7 @@ void setup() {
   LOG_MSG("INFO: Setting up BLE...");
   setupBLE();
   LOG_MSG("INFO: BLE is set up. Waiting for a client connection...");
+  LOG_MSG("Homing motors...");
   home_motors();
 }
 
@@ -72,8 +73,8 @@ void loop() {
 
 void setupBLE(void)
 {
-  BLEDevice::init("Enchess");
-  LOG_MSG("INFO: BLE Device Name is Enchess");
+  BLEDevice::init("ENCHESS");
+  LOG_MSG("INFO: BLE Device Name is ENCHESS");
 
   BLEServer  *enchess_server;
   BLEService *enchess_service;
@@ -105,5 +106,7 @@ void setupBLE(void)
   enchess_service->start();
 
   LOG_MSG("INFO: Starting Device Advertising...");
+  enchess_server->getAdvertising()->addServiceUUID(ENCHESS_SERVICE_UUID);
+  enchess_server->getAdvertising()->setScanResponse(true);
   enchess_server->startAdvertising();
 }
