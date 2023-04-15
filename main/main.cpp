@@ -73,7 +73,7 @@ void loop() {
 
 void setupBLE(void)
 {
-  BLEDevice::init("ENCHESS");
+  BLEDevice::init(ENCHESS_BLE_NAME);
   LOG_MSG("INFO: BLE Device Name is ENCHESS");
 
   BLEServer  *enchess_server;
