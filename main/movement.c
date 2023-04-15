@@ -17,21 +17,47 @@ Rows    current_row = ROW_1;
 static void init_steppers(void)
 {
     s_col = (tmc2209_t*) malloc(sizeof (tmc2209_t));
-    tmc2209_full(s_col, ENCHESS_PIN_S1_EN, ENCHESS_PIN_S1_DIR, ENCHESS_PIN_S1_STEP, ENCHESS_PIN_S_RX,
-                        ENCHESS_PIN_S_TX,  ENCHESS_PIN_S1_MS1, ENCHESS_PIN_S1_MS2,  TMC2209_ADDRESS_0);
+    tmc2209_full(s_col, ENCHESS_PIN_S1_EN, ENCHESS_PIN_S1_DIR, ENCHESS_PIN_S1_STEP,
+                       ENCHESS_PIN_S_RX,  ENCHESS_PIN_S_TX,   ENCHESS_PIN_S1_MS1, ENCHESS_PIN_S1_MS2, TMC2209_ADDRESS_0, 0.11f);
     s_row = (tmc2209_t*) malloc(sizeof (tmc2209_t));
-    tmc2209_full(s_row, ENCHESS_PIN_S2_EN, ENCHESS_PIN_S1_DIR, ENCHESS_PIN_S1_STEP, ENCHESS_PIN_S_RX,
-                        ENCHESS_PIN_S_TX,  ENCHESS_PIN_S2_MS1, ENCHESS_PIN_S1_MS2,  TMC2209_ADDRESS_1);
+    tmc2209_full(s_row, ENCHESS_PIN_S2_EN, ENCHESS_PIN_S2_DIR, ENCHESS_PIN_S2_STEP,
+                       ENCHESS_PIN_S_RX,  ENCHESS_PIN_S_TX,   ENCHESS_PIN_S2_MS1, ENCHESS_PIN_S2_MS2, TMC2209_ADDRESS_1, 0.11f);
     
-    while(!tmc2209_check_connection(s_col) && !tmc2209_check_connection(s_row)) {
-        delay(1000);
-        LOG_MSG("Failed to setup UART communication with stepper drivers!");
+    if (!tmc2209_check_connection(s_col)) {
+        LOG_MSG("Failed to setup UART communication with S1!");
+        delay(500);
+        abort();
     }
+    LOG_MSG("Set up UART communication with S1!");
+    if (!tmc2209_check_connection(s_row)) {
+        LOG_MSG("Failed to setup UART communication with S2!");
+        delay(500);
+        abort();
+    }
+    LOG_MSG("Set up UART communication with S2!");
 
-    tmc2209_set_microsteps(s_col, (tmc2209_microstep)ENCHESS_MICROSTEPS);
+    // s_col configuration
+    tmc2209_enable(s_col);
+    tmc2209_toff(s_col, 4);
+    tmc2209_blank_time(s_col, 24);
+    tmc2209_rms_current(s_col, 1000);
+    tmc2209_set_microsteps(s_col, ENCHESS_MICROSTEPS);
+    tmc2209_tcoolthrs(s_col, 0xFFFFF);
+    tmc2209_semin(s_col, 5);
+    tmc2209_semax(s_col, 2);
+    tmc2209_sedn(s_col, 0b01);
     tmc2209_stallguard_thrs(s_col, ENCHESS_STALLGUARD_THRS);
-
-    tmc2209_set_microsteps(s_row, (tmc2209_microstep)ENCHESS_MICROSTEPS);
+    
+    // s_row configuration
+    tmc2209_enable(s_row);
+    tmc2209_toff(s_row, 4);
+    tmc2209_blank_time(s_row, 24);
+    tmc2209_rms_current(s_row, 400);
+    tmc2209_set_microsteps(s_row, ENCHESS_MICROSTEPS);
+    tmc2209_tcoolthrs(s_row, 0xFFFFF);
+    tmc2209_semin(s_row, 5);
+    tmc2209_semax(s_row, 2);
+    tmc2209_sedn(s_row, 0b01);
     tmc2209_stallguard_thrs(s_row, ENCHESS_STALLGUARD_THRS);
 }
 
@@ -49,13 +75,11 @@ static void home_routine(uint32_t step_delay, uint32_t retraction)
         if (!x_stall) {
             x_stall = tmc2209_is_stalling(s_col);
             if (x_stall) tmc2209_step_reset(s_col);
-            else         tmc2209_update(s_col);
         }
 
         if (!y_stall) {
             y_stall = tmc2209_is_stalling(s_row);
             if (y_stall) tmc2209_step_reset(s_row);
-            else         tmc2209_update(s_row);
         }
 
         // don't block RTOS
@@ -66,13 +90,6 @@ static void home_routine(uint32_t step_delay, uint32_t retraction)
     retracted_degrees = retraction * ENCHESS_DEGREES_PER_MM;
     tmc2209_rotate(s_col, -retracted_degrees);
     tmc2209_rotate(s_row, -retracted_degrees);
-    while (!tmc2209_step_is_idle(s_col) && !tmc2209_step_is_idle(s_row)) {
-        tmc2209_update(s_col); 
-        tmc2209_update(s_row); 
-        // don't block RTOS
-        yield();
-        delayMicroseconds(10);
-    }
 }
 
 void home_motors(void)
@@ -109,10 +126,4 @@ void execute_move(Columns c, Rows r)
 
     tmc2209_rotate(s_col, dx * ENCHESS_DEGREES_PER_SQUARE);
     tmc2209_rotate(s_row, dy * ENCHESS_DEGREES_PER_SQUARE);
-}
-
-void steppers_update(void)
-{
-    tmc2209_update(s_col);
-    tmc2209_update(s_row);
 }
