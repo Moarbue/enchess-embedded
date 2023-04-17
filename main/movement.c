@@ -14,7 +14,7 @@ tmc2209_t *s_col = NULL, *s_row = NULL;
 Columns current_col = COLUMN_A;
 Rows    current_row = ROW_1;
 
-static void init_steppers(void)
+void setup_motors(void)
 {
     s_col = (tmc2209_t*) malloc(sizeof (tmc2209_t));
     tmc2209_full(s_col, ENCHESS_PIN_S1_EN, ENCHESS_PIN_S1_DIR, ENCHESS_PIN_S1_STEP,
@@ -24,17 +24,17 @@ static void init_steppers(void)
                        ENCHESS_PIN_S_RX,  ENCHESS_PIN_S_TX,   ENCHESS_PIN_S2_MS1, ENCHESS_PIN_S2_MS2, TMC2209_ADDRESS_1, 0.11f);
     
     if (!tmc2209_check_connection(s_col)) {
-        LOG_MSG("Failed to setup UART communication with S1!");
+        LOG_MSG("ERROR: Failed to setup UART communication with S1!");
         delay(500);
         abort();
     }
-    LOG_MSG("Set up UART communication with S1!");
+    LOG_MSG("INFO: Set up UART communication with S1!");
     if (!tmc2209_check_connection(s_row)) {
-        LOG_MSG("Failed to setup UART communication with S2!");
+        LOG_MSG("ERROR: Failed to setup UART communication with S2!");
         delay(500);
         abort();
     }
-    LOG_MSG("Set up UART communication with S2!");
+    LOG_MSG("INFO: Set up UART communication with S2!");
 
     // s_col configuration
     tmc2209_enable(s_col);
@@ -100,11 +100,6 @@ static void home_routine(uint16_t rpm, uint32_t retraction, uint8_t thrs_x, uint
 void home_motors(void)
 {
     LOG_MSG("INFO: Homing motors...");
-    if (s_col == NULL || s_row == NULL) {
-        init_steppers();
-    }
-
-    LOG_MSG("Homing...");
 
     home_routine(ENCHESS_RPM,      ENCHESS_HOME_RETRACTION, ENCHESS_STALLGUARD_THRS_COL, ENCHESS_STALLGUARD_THRS_ROW);
     home_routine(ENCHESS_HOME_RPM, ENCHESS_HOME_RETRACTION, ENCHESS_HOME_STALLGUARD_THRS_COL, ENCHESS_HOME_STALLGUARD_THRS_ROW);
@@ -118,12 +113,8 @@ void home_motors(void)
 
 void execute_move(Columns c, Rows r, bool el_mag)
 {
-    if (s_col == NULL || s_row == NULL) {
-        init_steppers();
-    }
-
-    LOG_MSG("Executing Move: %c%c --> %c%c", (char)('A' + current_col), (char)('0' + current_row),
-                                             (char)('A' + c),           (char)('0' + r));
+    LOG_MSG("INFO: Executing Move: %c%c --> %c%c", (char)('A' + current_col), (char)('0' + current_row),
+                                                   (char)('A' + c),           (char)('0' + r));
 
     int8_t dx = current_col - c;
     int8_t dy = current_row - r;

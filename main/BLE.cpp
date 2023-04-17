@@ -51,7 +51,7 @@ class EnchessCallbacks : public BLECharacteristicCallbacks {
     }
 };
 
-void setupBLE(void)
+void setup_BLE(void)
 {
   LOG_MSG("INFO: Setting up BLE...");
   BLEDevice::init(ENCHESS_BLE_NAME);

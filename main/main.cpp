@@ -5,6 +5,7 @@
 #include "config.h"
 #include "movement.h"
 #include "BLE.h"
+#include "recognition.h"
 
 void setup() {
   pinMode(ENCHESS_PIN_LED1, OUTPUT);
@@ -13,7 +14,10 @@ void setup() {
 
   LOG_MSG("Welcome to Enchess %d.%d!", ENCHESS_VERSION_MAJOR, ENCHESS_VERSION_MINOR);
   
-  setupBLE();
+  setup_BLE();
+  setup_motors();
+  setup_sensors();
+
   home_motors();
 }
 

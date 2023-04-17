@@ -31,6 +31,7 @@ typedef enum {
     ROW_8,
 } Rows;
 
+void setup_motors(void);
 void home_motors(void);
 void execute_move(Columns c, Rows r, bool el_mag);
 

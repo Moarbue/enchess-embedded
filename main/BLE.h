@@ -9,6 +9,6 @@ extern struct SettingsOptions {
 } settingsOptions;
 
 extern bool deviceConnected;
-void setupBLE(void);
+void setup_BLE(void);
 
 #endif // ENCHESS_BLE_H
