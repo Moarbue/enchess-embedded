@@ -17,10 +17,11 @@
 #define ENCHESS_BOARD_OFFSET_Y       0   // Offset in mm to the bottom left corner of the board
 
 // general configuration
-#define ENCHESS_RPM                  60                     // rotations per minute
-#define ENCHESS_MICROSTEPS           TMC2209_MICROSTEPS_4   // divider for each step
-#define ENCHESS_STALLGUARD_THRS_COL  30                     // sensibility of stall detection for the column motors 0...255
-#define ENCHESS_STALLGUARD_THRS_ROW  20                     // sensibility of stall detection for the row    motor  0...255
+#define ENCHESS_RPM                   60                     // rotations per minute
+#define ENCHESS_MICROSTEPS            TMC2209_MICROSTEPS_4   // divider for each step
+#define ENCHESS_STALLGUARD_THRS_COL   30                     // sensibility of stall detection for the column motors 0...255
+#define ENCHESS_STALLGUARD_THRS_ROW   20                     // sensibility of stall detection for the row    motor  0...255
+#define ENCHESS_SENSOR_QUERY_INTERVAL 2000                   // every x ms all sensors are queried
 
 // homing related configuration
 #define ENCHESS_HOME_RPM                  24   // rotations per minute during homing
