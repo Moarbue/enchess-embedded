@@ -10,44 +10,47 @@ using std::string;
 #include "util.h"
 #include "config.h"
 #include "movement.h"
+#include "ArduinoJson.h"
 
 bool deviceConnected = false;
+
+static struct SettingsOptions {
+  int moveTime;
+  bool color;
+} settingsOptions;
 
 class EnchessServerCallbacks: public BLEServerCallbacks {
     void onConnect(BLEServer* pServer) {
       deviceConnected = true;
       digitalWrite(ENCHESS_PIN_LED3, HIGH);
+      LOG_MSG("INFO: Client connection registered.");
       
     };
 
     void onDisconnect(BLEServer* pServer) {
       deviceConnected = false;
       digitalWrite(ENCHESS_PIN_LED3, LOW);
+      LOG_MSG("INFO: Client disconnection registered.");
     }
 };
 
 class EnchessCallbacks : public BLECharacteristicCallbacks {
     void onWrite(BLECharacteristic *pCharacteristic) {
-      string rxValue = pCharacteristic->getValue();
+      string json = pCharacteristic->getValue();
+      StaticJsonDocument<200> doc;
 
-
-      if (rxValue.length() > 0) {
-        for (int i = 0; i < rxValue.length(); i++) {
-          LOG_MSG("%c", rxValue[i]);
-        }
-
-        LOG_MSG("\r\n");
-
-        // Do stuff based on the command received from the app
-        if (rxValue.find("A") != -1) { 
-          LOG_MSG("Turning ON!");
-          digitalWrite(ENCHESS_PIN_LED1, HIGH);
-        }
-        else if (rxValue.find("B") != -1) {
-          LOG_MSG("Turning OFF!");
-          digitalWrite(ENCHESS_PIN_LED1, LOW);
-        }
+      DeserializationError error = deserializeJson(doc, json);
+      if (error) {
+        LOG_MSG("ERROR: failed to deserialize settings: %s", error.c_str());
+        return;
       }
+
+      settingsOptions.moveTime = doc["moveTime"];
+      settingsOptions.color    = doc["color"];
+
+      LOG_MSG("INFO: Updated Settings. New Settings are:");
+      LOG_MSG("Move Time - %u", settingsOptions.moveTime);
+      LOG_MSG("Color - %u", settingsOptions.color);
     }
 };
 
@@ -63,8 +66,9 @@ void setup() {
   LOG_MSG("INFO: Setting up BLE...");
   setupBLE();
   LOG_MSG("INFO: BLE is set up. Waiting for a client connection...");
-  LOG_MSG("Homing motors...");
+  LOG_MSG("INFO: Homing motors...");
   home_motors();
+  LOG_MSG("INFO: Finished homing!");
 }
 
 void loop() {
