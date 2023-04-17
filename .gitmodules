@@ -4,3 +4,6 @@
 [submodule "components/tmc2209"]
 	path = components/tmc2209
 	url = https://github.com/Moarbue/tmc2209
+[submodule "components/ArduinoJson"]
+	path = components/ArduinoJson
+	url = https://github.com/bblanchon/ArduinoJson.git
