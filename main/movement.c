@@ -40,38 +40,39 @@ static void init_steppers(void)
     tmc2209_enable(s_col);
     tmc2209_toff(s_col, 4);
     tmc2209_blank_time(s_col, 24);
-    tmc2209_rms_current(s_col, 1000);
+    tmc2209_rms_current(s_col, 1500, 0.7);
     tmc2209_set_microsteps(s_col, ENCHESS_MICROSTEPS);
     tmc2209_tcoolthrs(s_col, 0xFFFFF);
     tmc2209_semin(s_col, 5);
     tmc2209_semax(s_col, 2);
     tmc2209_sedn(s_col, 0b01);
-    tmc2209_stallguard_thrs(s_col, ENCHESS_STALLGUARD_THRS);
     
     // s_row configuration
     tmc2209_enable(s_row);
     tmc2209_toff(s_row, 4);
     tmc2209_blank_time(s_row, 24);
-    tmc2209_rms_current(s_row, 400);
+    tmc2209_rms_current(s_row, 1000, 0.7);
     tmc2209_set_microsteps(s_row, ENCHESS_MICROSTEPS);
     tmc2209_tcoolthrs(s_row, 0xFFFFF);
     tmc2209_semin(s_row, 5);
     tmc2209_semax(s_row, 2);
     tmc2209_sedn(s_row, 0b01);
-    tmc2209_stallguard_thrs(s_row, ENCHESS_STALLGUARD_THRS);
 }
 
-static void home_routine(uint32_t step_delay, uint32_t retraction)
+static void home_routine(uint16_t rpm, uint32_t retraction, uint8_t thrs_x, uint8_t thrs_y)
 {
     bool x_stall, y_stall;
     uint32_t retracted_degrees;
 
     x_stall = y_stall = false;
-    tmc2209_set_step_delay(s_col, step_delay);
-    tmc2209_set_step_delay(s_row, step_delay);
-    tmc2209_rotate(s_col, ENCHESS_BOARD_SIZE * ENCHESS_DEGREES_PER_MM);
-    tmc2209_rotate(s_row, ENCHESS_BOARD_SIZE * ENCHESS_DEGREES_PER_MM);
-    while (!x_stall && !y_stall) {
+    tmc2209_set_rpm(s_col, rpm);
+    tmc2209_set_rpm(s_row, rpm);
+    tmc2209_stallguard_thrs(s_col, thrs_x);
+    tmc2209_stallguard_thrs(s_row, thrs_y);
+    tmc2209_rotate(s_col, -ENCHESS_BOARD_SIZE * ENCHESS_DEGREES_PER_MM);
+    tmc2209_rotate(s_row, -ENCHESS_BOARD_SIZE * ENCHESS_DEGREES_PER_MM);
+    delay(500);
+    while (!x_stall || !y_stall) {
         if (!x_stall) {
             x_stall = tmc2209_is_stalling(s_col);
             if (x_stall) tmc2209_step_reset(s_col);
@@ -88,8 +89,12 @@ static void home_routine(uint32_t step_delay, uint32_t retraction)
     }
     
     retracted_degrees = retraction * ENCHESS_DEGREES_PER_MM;
-    tmc2209_rotate(s_col, -retracted_degrees);
-    tmc2209_rotate(s_row, -retracted_degrees);
+    tmc2209_rotate(s_col, retracted_degrees);
+    tmc2209_rotate(s_row, retracted_degrees);
+    delay(500);
+    // TODO: Check if step_is_idle() is working
+    while(!tmc2209_step_is_idle(s_col) && !tmc2209_step_is_idle(s_row)) {delay(1);};
+    delay(5000);
 }
 
 void home_motors(void)
@@ -100,16 +105,16 @@ void home_motors(void)
 
     LOG_MSG("Homing...");
 
-    home_routine(ENCHESS_STEP_DELAY,      ENCHESS_HOME_RETRACTION);
-    home_routine(ENCHESS_HOME_STEP_DELAY, ENCHESS_HOME_RETRACTION);
+    home_routine(ENCHESS_RPM,      ENCHESS_HOME_RETRACTION, ENCHESS_STALLGUARD_THRS_COL, ENCHESS_STALLGUARD_THRS_ROW);
+    home_routine(ENCHESS_HOME_RPM, ENCHESS_HOME_RETRACTION, ENCHESS_HOME_STALLGUARD_THRS_COL, ENCHESS_HOME_STALLGUARD_THRS_ROW);
     // find first square (A1)
-    tmc2209_set_step_delay(s_col, ENCHESS_STEP_DELAY);
-    tmc2209_set_step_delay(s_row, ENCHESS_STEP_DELAY);
+    tmc2209_set_rpm(s_col, ENCHESS_RPM);
+    tmc2209_set_rpm(s_row, ENCHESS_RPM);
     tmc2209_rotate(s_col, ((ENCHESS_SQUARE_SIZE / 2) - ENCHESS_HOME_RETRACTION + ENCHESS_BOARD_OFFSET_X) * ENCHESS_DEGREES_PER_MM);
     tmc2209_rotate(s_row, ((ENCHESS_SQUARE_SIZE / 2) - ENCHESS_HOME_RETRACTION + ENCHESS_BOARD_OFFSET_Y) * ENCHESS_DEGREES_PER_MM);
 }
 
-void execute_move(Columns c, Rows r)
+void execute_move(Columns c, Rows r, bool el_mag)
 {
     if (s_col == NULL || s_row == NULL) {
         init_steppers();
@@ -123,6 +128,9 @@ void execute_move(Columns c, Rows r)
 
     current_col = c;
     current_row = r;
+
+    if (el_mag) digitalWrite(ENCHESS_PIN_EL_MAG, HIGH);
+    else        digitalWrite(ENCHESS_PIN_EL_MAG, LOW);
 
     tmc2209_rotate(s_col, dx * ENCHESS_DEGREES_PER_SQUARE);
     tmc2209_rotate(s_row, dy * ENCHESS_DEGREES_PER_SQUARE);

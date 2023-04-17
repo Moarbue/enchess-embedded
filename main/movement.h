@@ -31,7 +31,7 @@ typedef enum {
 } Rows;
 
 void home_motors(void);
-void execute_move(Columns c, Rows r);
+void execute_move(Columns c, Rows r, bool el_mag);
 
 
 #ifdef __cplusplus
