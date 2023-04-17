@@ -1,4 +1,5 @@
 #include "config.h"
+#include "stdbool.h"
 
 #ifndef ENCHESS_MOVEMENT_H
 #define ENCHESS_MOVEMENT_H

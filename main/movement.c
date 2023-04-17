@@ -99,6 +99,7 @@ static void home_routine(uint16_t rpm, uint32_t retraction, uint8_t thrs_x, uint
 
 void home_motors(void)
 {
+    LOG_MSG("INFO: Homing motors...");
     if (s_col == NULL || s_row == NULL) {
         init_steppers();
     }
@@ -112,6 +113,7 @@ void home_motors(void)
     tmc2209_set_rpm(s_row, ENCHESS_RPM);
     tmc2209_rotate(s_col, ((ENCHESS_SQUARE_SIZE / 2) - ENCHESS_HOME_RETRACTION + ENCHESS_BOARD_OFFSET_X) * ENCHESS_DEGREES_PER_MM);
     tmc2209_rotate(s_row, ((ENCHESS_SQUARE_SIZE / 2) - ENCHESS_HOME_RETRACTION + ENCHESS_BOARD_OFFSET_Y) * ENCHESS_DEGREES_PER_MM);
+    LOG_MSG("INFO: Finished homing!");
 }
 
 void execute_move(Columns c, Rows r, bool el_mag)
