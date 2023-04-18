@@ -6,7 +6,7 @@
 #define OCCUPIED 0
 #define EMPTY    1
 
-extern bool squares[64];
+extern uint8_t squares[64];
 
 void setup_sensors(void);
 
