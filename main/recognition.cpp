@@ -3,10 +3,11 @@
 #include "config.h"
 #include "enchess_pinout.h"
 #include "util.h"
+#include "BLE.h"
 
 #define is_bit_set(value, bit) (((value) & (1 << bit)) ? HIGH : LOW)
 
-bool squares[64] = {0};
+uint8_t squares[64] = {0};
 
 void query_task(void *param);
 
@@ -43,6 +44,9 @@ void query_task(void *param)
         if (tmc_index < 63) tmc_index++;
         else {
             tmc_index = 0;
+
+            sendArray(squares, 64);
+            
             delay(ENCHESS_SENSOR_QUERY_INTERVAL - 64);
         }
     }
