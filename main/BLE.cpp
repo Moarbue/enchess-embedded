@@ -13,6 +13,8 @@
 
 using std::string;
 
+BLECharacteristic *enchess_tx_characteristic;
+
 bool deviceConnected = false;
 struct SettingsOptions settingsOptions;
 
@@ -59,7 +61,6 @@ void setup_BLE(void)
 
   BLEServer  *enchess_server;
   BLEService *enchess_service;
-  BLECharacteristic *enchess_tx_characteristic;
   BLECharacteristic *enchess_rx_characteristic;
 
   LOG_MSG("INFO: Creating BLE Server...");
@@ -92,3 +93,18 @@ void setup_BLE(void)
   enchess_server->startAdvertising();
   LOG_MSG("INFO: BLE is set up. Waiting for a client connection...");
 }
+
+void sendArray(uint8_t *squares, uint8_t size)
+{
+  StaticJsonDocument<JSON_ARRAY_SIZE(64)> doc;
+  JsonArray array = doc.to<JsonArray>();
+
+  for (uint8_t i = 0; i < size; i++) {
+    // TODO: actually send real data
+    array.add(squares[i] * rand() % 17);
+  }
+  string output;
+  serializeJson(doc, output);
+  enchess_tx_characteristic->setValue(output);
+  enchess_tx_characteristic->notify();
+} 
