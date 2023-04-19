@@ -70,40 +70,41 @@ void query_task(void *param)
     bool old_query_results[SQUARES_COUNT] = {0};
 
     while(1) {
-        digitalWrite(ENCHESS_PIN_TMC_0, is_bit_set(tmc_index, 0));
-        digitalWrite(ENCHESS_PIN_TMC_1, is_bit_set(tmc_index, 1));
-        digitalWrite(ENCHESS_PIN_TMC_2, is_bit_set(tmc_index, 2));
-        digitalWrite(ENCHESS_PIN_TMC_3, is_bit_set(tmc_index, 3));
-        digitalWrite(ENCHESS_PIN_TMC_4, is_bit_set(tmc_index, 4));
-        digitalWrite(ENCHESS_PIN_TMC_5, is_bit_set(tmc_index, 5));
+        delay(ENCHESS_SENSOR_QUERY_INTERVAL - SQUARES_COUNT);
 
-        delay(1);
-        query_results[tmc_index] = digitalRead(ENCHESS_PIN_TMC_OUT);
+        // query sensors
+        for (uint8_t i = 0; i < SQUARES_COUNT; i++) {
+            digitalWrite(ENCHESS_PIN_TMC_0, is_bit_set(i, 0));
+            digitalWrite(ENCHESS_PIN_TMC_1, is_bit_set(i, 1));
+            digitalWrite(ENCHESS_PIN_TMC_2, is_bit_set(i, 2));
+            digitalWrite(ENCHESS_PIN_TMC_3, is_bit_set(i, 3));
+            digitalWrite(ENCHESS_PIN_TMC_4, is_bit_set(i, 4));
+            digitalWrite(ENCHESS_PIN_TMC_5, is_bit_set(i, 5));
 
-        if (tmc_index < 63) tmc_index++;
-        else {
-            tmc_index = 0;
-            
-            // check if a chess piece was moved
-            if (memcmp(query_results, old_query_results, SQUARES_COUNT * sizeof (query_results[0])) == 0) continue;
-
-            // find old and new pos
-            // NOTE: it is expected that only one chess piece was moved, information about the type is lost
-            uint8_t old_pos, new_pos, j = 0;
-            for(uint8_t i = 0; i < SQUARES_COUNT; i++) {
-               if (query_results[i] == old_query_results[i]) continue;
-               if (query_results[i] == OCCUPIED) new_pos = i;
-               if (query_results[i] == EMPTY   ) old_pos = i;
-
-               j++;
-               if (j > 2) LOG_MSG("ERROR: More than one chess piece was moved since last query!");
-            }
-
-            swap(squares[old_pos], squares[new_pos]);
-            sendArray((uint8_t *)squares, SQUARES_COUNT);
-
-            memcpy(old_query_results, query_results, SQUARES_COUNT * sizeof (query_results[0]));
-            delay(ENCHESS_SENSOR_QUERY_INTERVAL - SQUARES_COUNT);
+            delay(1);
+            query_results[i] = digitalRead(ENCHESS_PIN_TMC_OUT);
         }
+
+        // check if pieces moved since last query
+        if (memcmp(query_results, old_query_results, SQUARES_COUNT * sizeof (query_results[0])) == 0) continue;
+
+        // find old and new pos
+        // NOTE: it is expected that only one chess piece was moved, else information about the type is lost
+        uint8_t old_pos, new_pos, j = 0;
+        for(uint8_t i = 0; i < SQUARES_COUNT; i++) {
+           if (query_results[i] == old_query_results[i]) continue;
+           if (query_results[i] == OCCUPIED) new_pos = i;
+           if (query_results[i] == EMPTY   ) old_pos = i;
+
+           j++;
+           if (j > 2) LOG_MSG("ERROR: More than one chess piece was moved since last query!");
+        }
+
+        // update pieces position and notify mobile app
+        swap(squares[old_pos], squares[new_pos]);
+        sendArray((uint8_t *)squares, SQUARES_COUNT);
+
+        // update old values
+        memcpy(old_query_results, query_results, SQUARES_COUNT * sizeof (query_results[0]));
     }
 }
