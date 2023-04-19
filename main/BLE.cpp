@@ -100,8 +100,7 @@ void sendArray(uint8_t *squares, uint8_t size)
   JsonArray array = doc.to<JsonArray>();
 
   for (uint8_t i = 0; i < size; i++) {
-    // TODO: actually send real data
-    array.add(squares[i] * rand() % 17);
+    array.add(squares[i]);
   }
   string output;
   serializeJson(doc, output);
