@@ -36,12 +36,43 @@ void setup_motors(void)
     }
     LOG_MSG("INFO: Set up UART communication with S2!");
 
+    tmc2209_microstep ms;
+    switch (ENCHESS_MICROSTEPS) {
+        case 0:
+            ms = TMC2209_MICROSTEPS_NONE;
+        break;
+        case 2:
+            ms = TMC2209_MICROSTEPS_2;
+        break;
+        case 4:
+            ms = TMC2209_MICROSTEPS_4;
+        break;
+        case 8:
+            ms = TMC2209_MICROSTEPS_8;
+        break;
+        case 16:
+            ms = TMC2209_MICROSTEPS_16;
+        break;
+        case 32:
+            ms = TMC2209_MICROSTEPS_32;
+        break;
+        case 64:
+            ms = TMC2209_MICROSTEPS_64;
+        break;
+        case 128:
+            ms = TMC2209_MICROSTEPS_128;
+        break;
+        case 256:
+            ms = TMC2209_MICROSTEPS_256;
+        break;
+    }
+
     // s_col configuration
     tmc2209_enable(s_col);
     tmc2209_toff(s_col, 4);
     tmc2209_blank_time(s_col, 24);
     tmc2209_rms_current(s_col, 1500, 0.7);
-    tmc2209_set_microsteps(s_col, ENCHESS_MICROSTEPS);
+    tmc2209_set_microsteps(s_col, ms);
     tmc2209_tcoolthrs(s_col, 0xFFFFF);
     tmc2209_semin(s_col, 5);
     tmc2209_semax(s_col, 2);
@@ -52,7 +83,7 @@ void setup_motors(void)
     tmc2209_toff(s_row, 4);
     tmc2209_blank_time(s_row, 24);
     tmc2209_rms_current(s_row, 1000, 0.7);
-    tmc2209_set_microsteps(s_row, ENCHESS_MICROSTEPS);
+    tmc2209_set_microsteps(s_row, ms);
     tmc2209_tcoolthrs(s_row, 0xFFFFF);
     tmc2209_semin(s_row, 5);
     tmc2209_semax(s_row, 2);
