@@ -13,20 +13,20 @@
 #define ENCHESS_BOARD_SIZE           240 // board size in mm
 #define ENCHESS_THREADED_ROD_LEAD    8.0 // lead of threaded rod in mm
 #define ENCHESS_STEPS_PER_REVOLUTION 200 // motor steps for one full turn (1.8° per step)
-#define ENCHESS_BOARD_OFFSET_X       0   // Offset in mm to the bottom left corner of the board
-#define ENCHESS_BOARD_OFFSET_Y       0   // Offset in mm to the bottom left corner of the board
+#define ENCHESS_BOARD_OFFSET_X       1   // Offset in mm to the bottom left corner of the board
+#define ENCHESS_BOARD_OFFSET_Y       -12 // Offset in mm to the bottom left corner of the board
 
 // general configuration
-#define ENCHESS_RPM                   70                     // rotations per minute
+#define ENCHESS_RPM                   90                    // rotations per minute
 #define ENCHESS_MICROSTEPS            4                      // divider for each step
-#define ENCHESS_STALLGUARD_THRS_COL   30                     // sensibility of stall detection for the column motors 0...255
-#define ENCHESS_STALLGUARD_THRS_ROW   20                     // sensibility of stall detection for the row    motor  0...255
-#define ENCHESS_SENSOR_QUERY_INTERVAL 2000                   // every x ms all sensors are queried
+#define ENCHESS_STALLGUARD_THRS_COL   33                     // sensibility of stall detection for the column motors 0...255
+#define ENCHESS_STALLGUARD_THRS_ROW   35                     // sensibility of stall detection for the row    motor  0...255
+#define ENCHESS_SENSOR_QUERY_INTERVAL 5000                   // every x ms all sensors are queried
 
 // homing related configuration
-#define ENCHESS_HOME_RPM                  24   // rotations per minute during homing
-#define ENCHESS_HOME_RETRACTION           5    // retraction distance in mm after stall is detected
-#define ENCHESS_HOME_STALLGUARD_THRS_COL  10   // sensibility of stall detection for the column motors during homing 0...255
-#define ENCHESS_HOME_STALLGUARD_THRS_ROW  6    // sensibility of stall detection for the row    motor during homing  0...255
+#define ENCHESS_HOME_RPM                  24  // rotations per minute during homing
+#define ENCHESS_HOME_RETRACTION           5   // retraction distance in mm after stall is detected
+#define ENCHESS_HOME_STALLGUARD_THRS_COL  5   // sensibility of stall detection for the column motors during homing 0...255
+#define ENCHESS_HOME_STALLGUARD_THRS_ROW  8   // sensibility of stall detection for the row    motor during homing  0...255
 
 #endif // ENCHESS_CONFIG_H
