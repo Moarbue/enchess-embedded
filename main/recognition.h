@@ -3,6 +3,7 @@
 #ifndef ENCHESS_RECOGNITION_H
 #define ENCHESS_RECOGNITION_H
 
+#define SQUARES_COUNT 64
 #define OCCUPIED 0
 #define EMPTY    1
 

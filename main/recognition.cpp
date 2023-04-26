@@ -7,7 +7,6 @@
 
 #define is_bit_set(value, bit) (((value) & (1 << bit)) ? HIGH : LOW)
 
-#define SQUARES_COUNT 64
 #define SENSOR_INTERVAL 10
 
 #define swap(x,y) do                                                            \
