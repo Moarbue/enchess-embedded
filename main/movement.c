@@ -123,9 +123,8 @@ static void home_routine(uint16_t rpm, uint32_t retraction, uint8_t thrs_x, uint
     tmc2209_rotate(s_col, retracted_degrees);
     tmc2209_rotate(s_row, retracted_degrees);
     delay(500);
-    // TODO: Check if step_is_idle() is working
     while(!tmc2209_step_is_idle(s_col) && !tmc2209_step_is_idle(s_row)) {delay(1);};
-    delay(5000);
+    delay(1000);
 }
 
 void home_motors(void)
