@@ -10,6 +10,8 @@
 #include "config.h"
 #include "enchess_pinout.h"
 #include "util.h"
+#include "movement.h"
+#include "recognition.h"
 
 using std::string;
 
@@ -17,13 +19,20 @@ BLECharacteristic *enchess_tx_characteristic;
 
 bool deviceConnected = false;
 struct SettingsOptions settingsOptions;
+struct SettingsOptions prevsettingsOptions;
+
+struct Move {
+  Columns c_old;
+  Columns c_new;
+  Rows    r_old;
+  Rows    r_new;
+} actMove, prevMove;
 
 class EnchessServerCallbacks: public BLEServerCallbacks {
     void onConnect(BLEServer* pServer) {
       deviceConnected = true;
       digitalWrite(ENCHESS_PIN_LED3, HIGH);
       LOG_MSG("INFO: Client connection registered.");
-      
     };
 
     void onDisconnect(BLEServer* pServer) {
@@ -40,16 +49,30 @@ class EnchessCallbacks : public BLECharacteristicCallbacks {
 
       DeserializationError error = deserializeJson(doc, json);
       if (error) {
-        LOG_MSG("ERROR: failed to deserialize settings: %s", error.c_str());
+        LOG_MSG("ERROR: failed to deserialize data: %s", error.c_str());
         return;
       }
 
       settingsOptions.moveTime = doc["moveTime"];
       settingsOptions.color    = doc["color"];
 
-      LOG_MSG("INFO: Updated Settings. New Settings are:");
-      LOG_MSG("Move Time - %u", settingsOptions.moveTime);
-      LOG_MSG("Color - %u", settingsOptions.color);
+      actMove.c_old = doc["prevCol"];
+      actMove.c_new = doc["newCol" ];
+      actMove.r_old = doc["prevRow"];
+      actMove.r_new = doc["newRow" ];
+
+      if (memcmp(&prevMove, &actMove, sizeof (actMove)) != 0) {
+        memcpy(&prevMove, &actMove, sizeof (actMove));
+        execute_move(actMove.c_old, actMove.r_old, false);
+        execute_move(actMove.c_new, actMove.r_new, true );
+      }
+
+      if (memcmp(&prevsettingsOptions, &settingsOptions, sizeof(settingsOptions)) != 0) {
+        memcpy(&prevsettingsOptions, &settingsOptions, sizeof(settingsOptions));
+        LOG_MSG("INFO: Updated Settings. New Settings are:");
+        LOG_MSG("Move Time - %u", settingsOptions.moveTime);
+        LOG_MSG("Color - %u", settingsOptions.color);
+      }
     }
 };
 
