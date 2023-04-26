@@ -24,8 +24,8 @@ Pieces squares[SQUARES_COUNT] = {
     none,       none,         none,         none,        none,       none,         none,         none,
     none,       none,         none,         none,        none,       none,         none,         none,
     none,       none,         none,         none,        none,       none,         none,         none,
-    white_rook, white_knight, white_bishop, white_queen, white_king, white_bishop, white_knight, white_rook,
     white_pawn, white_pawn,   white_pawn,   white_pawn,  white_pawn, white_pawn,   white_pawn,   white_pawn,
+    white_rook, white_knight, white_bishop, white_queen, white_king, white_bishop, white_knight, white_rook,
 };
 
 void query_task(void *param);
