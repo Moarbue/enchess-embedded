@@ -9,18 +9,25 @@
 #define ENCHESS_DEGREES_PER_SQUARE  (360.0 * (ENCHESS_SQUARE_SIZE / ENCHESS_THREADED_ROD_LEAD))
 #define ENCHESS_DEGREES_PER_MM      (360.0 / ENCHESS_THREADED_ROD_LEAD)
 
+#define WAIT_FOR_STEPPERS() do {                                                \
+        while(!tmc2209_step_is_idle(s_col) || !tmc2209_step_is_idle(s_row)) {   \
+            delay(1);                                                           \
+        }                                                                       \
+        delay(500);                                                             \
+    } while (0)
+
 tmc2209_t *s_col = NULL, *s_row = NULL;
 
-Columns current_col = COLUMN_A;
+Columns current_col = COLUMN_G;
 Rows    current_row = ROW_1;
 
 void setup_motors(void)
 {
-    s_col = (tmc2209_t*) malloc(sizeof (tmc2209_t));
-    tmc2209_full(s_col, ENCHESS_PIN_S1_EN, ENCHESS_PIN_S1_DIR, ENCHESS_PIN_S1_STEP,
-                       ENCHESS_PIN_S_RX,  ENCHESS_PIN_S_TX,   ENCHESS_PIN_S1_MS1, ENCHESS_PIN_S1_MS2, TMC2209_ADDRESS_0, 0.11f);
     s_row = (tmc2209_t*) malloc(sizeof (tmc2209_t));
-    tmc2209_full(s_row, ENCHESS_PIN_S2_EN, ENCHESS_PIN_S2_DIR, ENCHESS_PIN_S2_STEP,
+    tmc2209_full(s_row, ENCHESS_PIN_S1_EN, ENCHESS_PIN_S1_DIR, ENCHESS_PIN_S1_STEP,
+                       ENCHESS_PIN_S_RX,  ENCHESS_PIN_S_TX,   ENCHESS_PIN_S1_MS1, ENCHESS_PIN_S1_MS2, TMC2209_ADDRESS_0, 0.11f);
+    s_col = (tmc2209_t*) malloc(sizeof (tmc2209_t));
+    tmc2209_full(s_col, ENCHESS_PIN_S2_EN, ENCHESS_PIN_S2_DIR, ENCHESS_PIN_S2_STEP,
                        ENCHESS_PIN_S_RX,  ENCHESS_PIN_S_TX,   ENCHESS_PIN_S2_MS1, ENCHESS_PIN_S2_MS2, TMC2209_ADDRESS_1, 0.11f);
     
     if (!tmc2209_check_connection(s_col)) {
@@ -88,6 +95,8 @@ void setup_motors(void)
     tmc2209_semin(s_row, 5);
     tmc2209_semax(s_row, 2);
     tmc2209_sedn(s_row, 0b01);
+
+    pinMode(ENCHESS_PIN_EL_MAG, OUTPUT);
 }
 
 static void home_routine(uint16_t rpm, uint32_t retraction, uint8_t thrs_x, uint8_t thrs_y)
@@ -122,9 +131,7 @@ static void home_routine(uint16_t rpm, uint32_t retraction, uint8_t thrs_x, uint
     retracted_degrees = retraction * ENCHESS_DEGREES_PER_MM;
     tmc2209_rotate(s_col, retracted_degrees);
     tmc2209_rotate(s_row, retracted_degrees);
-    delay(500);
-    while(!tmc2209_step_is_idle(s_col) && !tmc2209_step_is_idle(s_row)) {delay(1);};
-    delay(1000);
+    WAIT_FOR_STEPPERS();
 }
 
 void home_motors(void)
@@ -138,16 +145,17 @@ void home_motors(void)
     tmc2209_set_rpm(s_row, ENCHESS_RPM);
     tmc2209_rotate(s_col, ((ENCHESS_SQUARE_SIZE / 2) - ENCHESS_HOME_RETRACTION + ENCHESS_BOARD_OFFSET_X) * ENCHESS_DEGREES_PER_MM);
     tmc2209_rotate(s_row, ((ENCHESS_SQUARE_SIZE / 2) - ENCHESS_HOME_RETRACTION + ENCHESS_BOARD_OFFSET_Y) * ENCHESS_DEGREES_PER_MM);
+    WAIT_FOR_STEPPERS();
     LOG_MSG("INFO: Finished homing!");
 }
 
 void execute_move(Columns c, Rows r, bool el_mag)
 {
-    LOG_MSG("INFO: Executing Move: %c%c --> %c%c", (char)('A' + current_col), (char)('0' + current_row),
-                                                   (char)('A' + c),           (char)('0' + r));
+    LOG_MSG("INFO: Executing Move: %c%c --> %c%c", (char)('A' + current_col), (char)('1' + current_row),
+                                                   (char)('A' + c),           (char)('1' + r));
 
     int8_t dx = current_col - c;
-    int8_t dy = current_row - r;
+    int8_t dy = r - current_row;
 
     current_col = c;
     current_row = r;
@@ -156,5 +164,8 @@ void execute_move(Columns c, Rows r, bool el_mag)
     else        digitalWrite(ENCHESS_PIN_EL_MAG, LOW);
 
     tmc2209_rotate(s_col, dx * ENCHESS_DEGREES_PER_SQUARE);
+    WAIT_FOR_STEPPERS();
     tmc2209_rotate(s_row, dy * ENCHESS_DEGREES_PER_SQUARE);
+    WAIT_FOR_STEPPERS();
+    digitalWrite(ENCHESS_PIN_EL_MAG, LOW);
 }
