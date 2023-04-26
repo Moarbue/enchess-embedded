@@ -17,24 +17,6 @@
      memcpy(&x,swap_temp,sizeof(x));                                            \
     } while(0)
 
-typedef enum {
-    white_pawn = 0,
-    white_king,
-    white_queen,
-    white_bishop,
-    white_rook,
-    white_knight,
-
-    black_pawn,
-    black_king,
-    black_queen,
-    black_bishop,
-    black_rook,
-    black_knight,
-
-    none,
-} Pieces;
-
 Pieces squares[SQUARES_COUNT] = {
     black_rook, black_knight, black_bishop, black_queen, black_king, black_bishop, black_knight, black_rook,
     black_pawn, black_pawn,   black_pawn,   black_pawn,  black_pawn, black_pawn,   black_pawn,   black_pawn,
@@ -75,8 +57,13 @@ void query_sensors(bool *sensors, uint8_t size)
         digitalWrite(ENCHESS_PIN_TMC_4, is_bit_set(i, 4));
         digitalWrite(ENCHESS_PIN_TMC_5, is_bit_set(i, 5));
 
+        uint8_t col = 7 - i / 8;
+        uint8_t row = i % 8;
+        if (col % 2 == 1) row = 7 - row;
+
         delay(SENSOR_INTERVAL);
-        sensors[i] = digitalRead(ENCHESS_PIN_TMC_OUT);
+        if (i % 16 == 0) delay(5000);
+        sensors[row * 8 + col] = digitalRead(ENCHESS_PIN_TMC_OUT);
     }
 }
 
@@ -87,12 +74,23 @@ void query_task(void *param)
 
     query_sensors(query_results, SQUARES_COUNT);
     memcpy(old_query_results, query_results, SQUARES_COUNT * sizeof (query_results[0]));
+    for (uint8_t i = 0; i < SQUARES_COUNT; i++) {
+        squares[i] = (query_results[i] == OCCUPIED) ? squares[i] : none;
+    }
+    sendArray(squares, SQUARES_COUNT);
 
     while(1) {
         delay(ENCHESS_SENSOR_QUERY_INTERVAL - SENSOR_INTERVAL * SQUARES_COUNT);
 
+        if (digitalRead(ENCHESS_PIN_EL_MAG) == HIGH) continue;
+
         // query sensors
         query_sensors(query_results, SQUARES_COUNT);
+        for (uint8_t i = 0; i < SQUARES_COUNT; i++) {
+            if (i % 8 == 0) LOG_MSG();
+            printf("%u ", query_results[i]);
+        }
+        LOG_MSG();
         
         // check if pieces moved since last query
         if (memcmp(query_results, old_query_results, SQUARES_COUNT * sizeof (query_results[0])) == 0) continue;
@@ -113,7 +111,7 @@ void query_task(void *param)
 
         // update pieces position and notify mobile app
         swap(squares[old_pos], squares[new_pos]);
-        sendArray((uint8_t *)squares, SQUARES_COUNT);
+        sendArray(squares, SQUARES_COUNT);
 
         // update old values
         memcpy(old_query_results, query_results, SQUARES_COUNT * sizeof (query_results[0]));

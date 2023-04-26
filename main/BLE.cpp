@@ -94,7 +94,7 @@ void setup_BLE(void)
   LOG_MSG("INFO: BLE is set up. Waiting for a client connection...");
 }
 
-void sendArray(uint8_t *squares, uint8_t size)
+void sendArray(Pieces *squares, uint8_t size)
 {
   StaticJsonDocument<JSON_ARRAY_SIZE(64)> doc;
   JsonArray array = doc.to<JsonArray>();
